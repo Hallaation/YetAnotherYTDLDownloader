@@ -2,6 +2,7 @@
    x:Class="YetAnotherYTDLDownloader.MainWindow"
    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+   xmlns:classes="clr-namespace:YetAnotherYTDLDownloader.Classes"
    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
    xmlns:local="clr-namespace:YetAnotherYTDLDownloader"
    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,31 +14,73 @@
    <Window.DataContext>
       <local:MainWindowViewModel />
    </Window.DataContext>
-   <Grid>
-      <StackPanel>
-         <TextBox Name="URLInput" Text="{Binding InputURL, Mode=TwoWay}" />
+   <Border
+      Margin="10"
+      BorderBrush="Black"
+      BorderThickness="2">
+      <Grid Margin="5">
+         <Grid.RowDefinitions>
+            <RowDefinition Height=".05*" />
+            <RowDefinition Height="*" />
+         </Grid.RowDefinitions>
+
+         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="7*" />
+            <ColumnDefinition Width="*" />
+         </Grid.ColumnDefinitions>
+
+         <TextBox
+            Name="URLInput"
+            Grid.Column="0"
+            Margin="0"
+            Text="{Binding InputURL, Mode=TwoWay}" />
          <Button
-            Width="200"
-            Height="100"
-            Command="{Binding AddURL}">
-            <TextBlock Text="Add URL" />
+            Grid.Column="1"
+            Margin="5,0,0,0"
+            Command="{Binding AnalyzeAndAdd}">
+            <TextBlock
+               VerticalAlignment="Center"
+               FontSize="10"
+               Text="Analyze" />
          </Button>
-         <Button
-            Width="200"
-            Height="100"
-            Command="{Binding OutputURLS}">
-            <TextBlock Text="OutputURLS" />
-         </Button>
-         <Button
-            Width="200"
-            Height="100"
-            Command="{Binding CheckForDLP}">
-            <TextBlock Text="Check for DLP" />
-         </Button>
-         <ListView
-            Height="200"
-            ItemsSource="{Binding URLList, Mode=OneWay}"
-            SelectedIndex="{Binding SelectedURLIndex, Mode=OneWayToSource}" />
-      </StackPanel>
-   </Grid>
+
+         <Border
+            Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Margin="0,5,0,0"
+            BorderBrush="Black"
+            BorderThickness="2">
+            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="2*" />
+                  <ColumnDefinition Width="*" />
+               </Grid.ColumnDefinitions>
+               <Grid.RowDefinitions>
+                  <RowDefinition Height="1*" />
+                  <RowDefinition Height="1*" />
+               </Grid.RowDefinitions>
+
+               <ListView
+                  Height="200"
+                  ItemsSource="{Binding VideoDetailList, Mode=OneWay}"
+                  SelectedIndex="{Binding SelectedURLIndex, Mode=OneWayToSource}">
+                  <ListView.ItemTemplate>
+                     <DataTemplate DataType="classes:VideoDetails">
+                        <StackPanel ToolTip="{Binding Title}">
+                           <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                     </DataTemplate>
+                  </ListView.ItemTemplate>
+               </ListView>
+               <ContentControl Grid.Column="1" Margin="5">
+                  <Rectangle Fill="Red" />
+                  <!--<Image Grid.Column="1" />-->
+               </ContentControl>
+
+            </Grid>
+         </Border>
+
+      </Grid>
+
+   </Border>
 </Window>
