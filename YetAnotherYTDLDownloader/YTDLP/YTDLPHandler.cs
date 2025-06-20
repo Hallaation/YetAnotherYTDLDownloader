@@ -8,8 +8,11 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+//using System.Windows.Shapes;
+using YetAnotherYTDLDownloader.Classes;
 
 namespace YetAnotherYTDLDownloader.YTDLP
 {
@@ -17,7 +20,6 @@ namespace YetAnotherYTDLDownloader.YTDLP
 	{
 		private string DPLGitHubAPI = @"https://api.github.com/repos/yt-dlp/yt-dlp/releases";
 		public enum DLPError { Sign, Unsupported }
-
 		const String defaultDownloadDir = "%userprofile%\\Videos";
 		public String DownloadLocation { get; set; } = defaultDownloadDir;
 		public HashSet<DLPError> StdErr { get; set; } = new();
@@ -25,10 +27,34 @@ namespace YetAnotherYTDLDownloader.YTDLP
 		public String Args { get; set; } = "";
 		Process process = new();
 
-		public YTDLPHandler() { }
+		private Task? dlpDownloadTask = null;
+		public YTDLPHandler()
+		{
+			if (CheckForDLP())
+			{
+				Trace.WriteLine($"DLP found {YTDLP_PATH}");
+				Trace.Assert(!String.IsNullOrEmpty(YTDLP_PATH), "YTDLP path is empty even though it was reported to have found one");
+			}
+			else
+			{
+				Trace.Assert(dlpDownloadTask == null, "DLP download task should always be null from ctor");	
+				if (dlpDownloadTask != null)
+				{
+					if (!(dlpDownloadTask.Status == TaskStatus.RanToCompletion || dlpDownloadTask.Status == TaskStatus.Running))
+					{
+						dlpDownloadTask = DownloadDLP();
+					}
+				}
+				else
+				{
+					//was null therefore it wasn't ran, do it
+					dlpDownloadTask = DownloadDLP();
+				}
+			}
+		}
 
-
-		public bool CheckForDLP()
+		//should only be called here, and only on ctor
+		private bool CheckForDLP()
 		{
 			//yt-dlp.exe for windows, yt-dlp for other platforms
 
@@ -63,8 +89,9 @@ namespace YetAnotherYTDLDownloader.YTDLP
 			}
 			return false;
 		}
-		public async Task DownloadDLP()
-		{
+
+		private async Task DownloadDLP()
+		{		
 			//we have the API URL
 			HttpClient client = new HttpClient();
 
