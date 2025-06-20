@@ -28,6 +28,12 @@
             Command="{Binding OutputURLS}">
             <TextBlock Text="OutputURLS" />
          </Button>
+         <Button
+            Width="200"
+            Height="100"
+            Command="{Binding CheckForDLP}">
+            <TextBlock Text="Check for DLP" />
+         </Button>
          <ListView
             Height="200"
             ItemsSource="{Binding URLList, Mode=OneWay}"

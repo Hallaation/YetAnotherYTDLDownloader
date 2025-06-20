@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using YetAnotherYTDLDownloader.YTDLP;
 
 
 //global namespace
@@ -30,8 +31,10 @@ namespace YetAnotherYTDLDownloader
 
 	}
 
-	public class MainWindowViewModel : NotifyPropertyChanged
+	public class MainWindowViewModel : PropertyNotifiable
 	{
+		//can this be static?
+		private YTDLPHandler YTDLPHandler = new YTDLPHandler();
 		public string InputURL { get; set; } = "";
 
 		public int SelectedURLIndex
@@ -44,6 +47,16 @@ namespace YetAnotherYTDLDownloader
 			}
 		}
 		public ObservableCollection<String> URLList { get; set; } = new ObservableCollection<string>();
+
+		public SimpleCommand TestYTDLP
+		{
+			get => new SimpleCommand(ex => AsyncDownloadDLP());
+		}
+
+		public SimpleCommand CheckForDLP
+		{
+			get => new SimpleCommand(ex => YTDLPHandler.CheckForDLP());
+		}
 
 		public SimpleCommand AddURL
 		{
@@ -59,6 +72,11 @@ namespace YetAnotherYTDLDownloader
 					Trace.WriteLine(url);
 				}
 			});
+		}
+
+		private Task AsyncDownloadDLP() 
+		{
+			return YTDLPHandler.DownloadDLP();
 		}
 
 		//private/member variables

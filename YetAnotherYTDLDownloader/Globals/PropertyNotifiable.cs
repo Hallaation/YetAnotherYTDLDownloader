@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-public class NotifyPropertyChanged : INotifyPropertyChanged
+public class PropertyNotifiable : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler? PropertyChanged;
 
