@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
@@ -38,36 +39,37 @@ namespace YetAnotherYTDLDownloader
 	{
 		public string InputURL { get; set; } = "";
 
+		public ObservableCollection<VideoDetails> VideoDetailList { get; set; } = new ObservableCollection<VideoDetails>();
+
+		public VideoDetails? SelectedVideo
+		{
+			get
+			{
+				if (SelectedURLIndex > -1 && SelectedURLIndex < VideoDetailList.Count)
+				{
+					return VideoDetailList[SelectedURLIndex];
+				}
+				return null;
+			}
+		}
+
 		private int mSelectedURLIndex = 0;
 		public int SelectedURLIndex
 		{
 			get { return mSelectedURLIndex; }
-			set 
+			set
 			{
-				mSelectedURLIndex = value; 
-				Trace.WriteLine($"Selected URL Index changed to {mSelectedURLIndex}"); 
+				mSelectedURLIndex = value;
+				Notify(nameof(SelectedVideo));
+				Trace.WriteLine($"Selected URL Index changed to {mSelectedURLIndex}");
 			}
 		}
-		public ObservableCollection<VideoDetails> VideoDetailList { get; set; } = new ObservableCollection<VideoDetails>();
 
 		public SimpleCommand AnalyzeAndAdd
 		{
-			get => new SimpleCommand(ex => 
-			{
-				//stdout
-				this.AnalyzeVideo(InputURL);
-				//this.internalAddURL();
-			});
-		}
-
-		public SimpleCommand OutputURLS
-		{
 			get => new SimpleCommand(ex =>
 			{
-				foreach (var url in VideoDetailList)
-				{
-					Trace.WriteLine(url);
-				}
+				this.AnalyzeVideo(InputURL);
 			});
 		}
 
@@ -77,6 +79,7 @@ namespace YetAnotherYTDLDownloader
 			YTDLPHandler handler = new YTDLPHandler();
 			handler.Args = $"-j {url}";
 			VideoDetails? outVideoDets = null;
+			Trace.WriteLine($"Starting from thread{Thread.CurrentThread.ManagedThreadId}");
 
 			handler.Exec(null, stdout =>
 			{
@@ -85,11 +88,16 @@ namespace YetAnotherYTDLDownloader
 					outVideoDets = JsonSerializer.Deserialize<VideoDetails>(stdout);
 					if (outVideoDets != null)
 					{
-						VideoDetailList.Add(outVideoDets);
-						Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
-						Notify(nameof(VideoDetailList));
-						//will it actually reach here?
+						Application.Current.Dispatcher.BeginInvoke(() =>
+						{
+							Trace.WriteLine($"OnTestDLPComplete Thread {Thread.CurrentThread.ManagedThreadId}");
+							VideoDetailList.Add(outVideoDets);
+							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
+							InputURL = "";
+							Notify(nameof(VideoDetailList));
+						});
 					}
+
 				}
 				catch (Exception ex)
 				{
@@ -97,7 +105,6 @@ namespace YetAnotherYTDLDownloader
 				}
 			});
 		}
-
 	}
 
 }
