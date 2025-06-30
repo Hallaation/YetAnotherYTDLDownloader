@@ -61,7 +61,21 @@
                   <RowDefinition Height=".1*" />
                </Grid.RowDefinitions>
 
-               <ListView ItemsSource="{Binding VideoDetailList, Mode=OneWay}" SelectedIndex="{Binding SelectedURLIndex, Mode=OneWayToSource}">
+               <Grid Grid.Row="0">
+                  <Grid.RowDefinitions>
+                     <RowDefinition Height=".1*" />
+                     <RowDefinition Height="*" />
+                  </Grid.RowDefinitions>
+
+                  <TextBox
+                     Grid.Row="0"
+                     Height="20"
+                     Text="{Binding SelectedVideo.Title}" />
+                  <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                     <TextBox Text="{Binding SelectedVideo.Description}" />
+                  </ScrollViewer>
+               </Grid>
+               <!--<ListView ItemsSource="{Binding VideoDetailList, Mode=OneWay}" SelectedIndex="{Binding SelectedURLIndex, Mode=OneWayToSource}">
                   <ListView.ItemTemplate>
                      <DataTemplate DataType="classes:VideoDetails">
                         <StackPanel ToolTip="{Binding Title}">
@@ -69,7 +83,7 @@
                         </StackPanel>
                      </DataTemplate>
                   </ListView.ItemTemplate>
-               </ListView>
+               </ListView>-->
 
                <Grid Grid.Row="1">
                   <Grid.RowDefinitions>

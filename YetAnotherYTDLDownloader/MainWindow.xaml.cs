@@ -41,17 +41,20 @@ namespace YetAnotherYTDLDownloader
 
 		public ObservableCollection<VideoDetails> VideoDetailList { get; set; } = new ObservableCollection<VideoDetails>();
 
-		public VideoDetails? SelectedVideo
-		{
-			get
-			{
-				if (SelectedURLIndex > -1 && SelectedURLIndex < VideoDetailList.Count)
-				{
-					return VideoDetailList[SelectedURLIndex];
-				}
-				return null;
-			}
-		}
+		//public VideoDetails? SelectedVideo
+		//{
+		//	get
+		//	{
+		//		if (SelectedURLIndex > -1 && SelectedURLIndex < VideoDetailList.Count)
+		//		{
+		//			return VideoDetailList[SelectedURLIndex];
+		//		}
+		//		return null;
+		//	}
+		//}
+
+		public VideoDetails? SelectedVideo { get; private set; } = null;
+
 
 		private int mSelectedURLIndex = 0;
 		public int SelectedURLIndex
@@ -59,9 +62,10 @@ namespace YetAnotherYTDLDownloader
 			get { return mSelectedURLIndex; }
 			set
 			{
-				mSelectedURLIndex = value;
-				Notify(nameof(SelectedVideo));
-				Trace.WriteLine($"Selected URL Index changed to {mSelectedURLIndex}");
+				mSelectedURLIndex = -1;
+				//mSelectedURLIndex = value;
+				//Notify(nameof(SelectedVideo));
+				//Trace.WriteLine($"Selected URL Index changed to {mSelectedURLIndex}");
 			}
 		}
 
@@ -77,7 +81,8 @@ namespace YetAnotherYTDLDownloader
 		{
 			//Build my arguments
 			YTDLPHandler handler = new YTDLPHandler();
-			handler.Args = $"-j {url}";
+			YTDLPArgs yTDLPArgs = new YTDLPArgs(url) { AnalyzeMode = true };
+			handler.Args = yTDLPArgs.Args;
 			VideoDetails? outVideoDets = null;
 			Trace.WriteLine($"Starting from thread{Thread.CurrentThread.ManagedThreadId}");
 
@@ -85,16 +90,19 @@ namespace YetAnotherYTDLDownloader
 			{
 				try
 				{
+					
 					outVideoDets = JsonSerializer.Deserialize<VideoDetails>(stdout);
 					if (outVideoDets != null)
 					{
 						Application.Current.Dispatcher.BeginInvoke(() =>
 						{
 							Trace.WriteLine($"OnTestDLPComplete Thread {Thread.CurrentThread.ManagedThreadId}");
-							VideoDetailList.Add(outVideoDets);
+							//VideoDetailList.Add(outVideoDets);
+							SelectedVideo = outVideoDets;
 							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
 							InputURL = "";
-							Notify(nameof(VideoDetailList));
+							Notify(nameof(SelectedVideo));
+							//Notify(nameof(VideoDetailList));
 						});
 					}
 
