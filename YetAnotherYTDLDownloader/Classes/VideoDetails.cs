@@ -46,14 +46,14 @@ namespace YetAnotherYTDLDownloader.Classes
 		[JsonPropertyName("format_id")]
 		public string FormatID { get; set; } = "";
 
-		[JsonPropertyName("fps")]
-		public double FPS { get; set; }
+		[JsonPropertyName("fps"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public double? FPS { get; set; }
 
-		[JsonPropertyName("width")]
-		public int Width { get; set; }
+		[JsonPropertyName("width"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public int? Width { get; set; }
 
-		[JsonPropertyName("height")]
-		public int Height { get; set; }
+		[JsonPropertyName("height"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public int? Height { get; set; }
 
 		[JsonPropertyName("resolution")]
 		public string Resolution { get; set; } = "";
