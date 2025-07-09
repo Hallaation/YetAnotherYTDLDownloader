@@ -88,10 +88,45 @@
                <Grid Grid.Row="1">
                   <Grid.RowDefinitions>
                      <RowDefinition Height=".2*" />
+                     <RowDefinition Height=".2*" />
                      <RowDefinition Height="*" />
                   </Grid.RowDefinitions>
-                  <Rectangle Grid.Row="1" Fill="AliceBlue" />
-                  <ComboBox Name="VideoFormats" ItemsSource="{Binding SelectedVideo.Formats}">
+                  <!--  Download Arguments  -->
+                  <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
+                     <Rectangle Grid.Row="1" Fill="AliceBlue" />
+                     <CheckBox Content="Verbose Output" IsChecked="{Binding DownloadArgs.SplitTracks}" />
+                     <CheckBox Content="Live FromStart" IsChecked="{Binding DownloadArgs.LiveFromStart}" />
+                     <CheckBox Content="Embed Metadata" IsChecked="{Binding DownloadArgs.EmbedMetadata}" />
+                     <CheckBox Content="Include Uploader" IsChecked="{Binding DownloadArgs.IncludeUploader}" />
+                     <CheckBox Content="Wait for Video" IsChecked="{Binding DownloadArgs.WaitForVideo}" />
+                     <TextBlock
+                        HorizontalAlignment="Center"
+                        Text="{Binding DownloadArgs.WaitForVideoTimeInSeconds}"
+                        Visibility="{Binding DownloadArgs.WaitForVideo, Converter={StaticResource BoolToVisibilty}}" />
+                     <Slider
+                        AutoToolTipPlacement="TopLeft"
+                        AutoToolTipPrecision="0"
+                        Maximum="60"
+                        Minimum="0"
+                        Visibility="{Binding DownloadArgs.WaitForVideo, Converter={StaticResource BoolToVisibilty}}"
+                        Value="{Binding DownloadArgs.WaitForVideoTimeInSeconds}" />
+                  </StackPanel>
+                  <ComboBox
+                     Name="VideoFormats"
+                     Grid.Row="0"
+                     ItemsSource="{Binding SelectedVideo.VideoFormats}"
+                     SelectedIndex="{Binding SelectedVideoFormatIdx}">
+                     <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="classes:VideoFormatDetails">
+                           <TextBlock Text="{Binding FormattedText}" />
+                        </DataTemplate>
+                     </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <ComboBox
+                     Name="AudioFormats"
+                     Grid.Row="1"
+                     ItemsSource="{Binding SelectedVideo.AudioFormats}"
+                     SelectedIndex="{Binding SelectedAudioFormatIdx}">
                      <ComboBox.ItemTemplate>
                         <DataTemplate DataType="classes:VideoFormatDetails">
                            <TextBlock Text="{Binding FormattedText}" />
@@ -107,30 +142,25 @@
                      <!--<Rectangle Fill="Red" />-->
                      <Image Grid.Column="1" Source="{Binding SelectedVideo.Thumbnail}" />
                   </ContentControl>
-                  <CheckBox>
-                     <TextBlock Text="Embed thumbnail" />
-                  </CheckBox>
+                  <CheckBox Content="Embed Thumbnail" IsChecked="{Binding DownloadArgs.EmbedThumbnail}" />
                </StackPanel>
-
-               <Rectangle
-                  Grid.Row="2"
-                  Grid.ColumnSpan="2"
-                  Fill="LightBlue" />
 
                <TextBox
                   x:Name="OutputDIR"
                   Grid.Row="2"
-                  Margin="2,0,2,1" />
+                  Margin="2,0,2,1"
+                  Text="{Binding DownloadArgs.OutputDir, Mode=TwoWay}" />
                <StackPanel
                   Grid.Row="2"
                   Grid.Column="1"
                   Orientation="Horizontal">
-                  <Button>
+                  <Button Command="{Binding StartDownload}">
                      <TextBlock
                         VerticalAlignment="Center"
                         FontSize="10"
-                        Text="Do A Thing" />
+                        Text="Start Download" />
                   </Button>
+                  <ProgressBar Width="100" Value="{Binding DownloadProgress}" />
                </StackPanel>
 
             </Grid>
