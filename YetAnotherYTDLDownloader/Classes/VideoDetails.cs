@@ -15,9 +15,9 @@ namespace YetAnotherYTDLDownloader.Classes
 	{
 		//only used for debug and layout purposese
 		public VideoDetails(string id, string title)
-		{ 
+		{
 			ID = id;
-			Title = title; 
+			Title = title;
 		}
 
 		[JsonPropertyName("id")]
@@ -39,6 +39,24 @@ namespace YetAnotherYTDLDownloader.Classes
 		public string LiveStatus { get; set; } = "";
 		[JsonPropertyName("formats")]
 		public List<VideoFormatDetails>? Formats { get; set; } = null;
+
+		public List<VideoFormatDetails>? VideoFormats
+		{
+			get
+			{
+				List<VideoFormatDetails>? videos = Formats?.Where(f => f.VideoExt != "none").ToList<VideoFormatDetails>();
+				return videos;
+			}
+		}
+		public List<VideoFormatDetails>? AudioFormats
+		{
+			get
+			{
+				List<VideoFormatDetails>? audio = Formats?.Where(f => f.AudioExt != "none").ToList<VideoFormatDetails>();
+				return audio;
+			}
+		}
+
 	}
 
 	public class VideoFormatDetails
@@ -58,13 +76,29 @@ namespace YetAnotherYTDLDownloader.Classes
 		[JsonPropertyName("resolution")]
 		public string Resolution { get; set; } = "";
 
+		[JsonPropertyName("acodec")]
+		public string AudioCodec { get; set; } = "";
+
 		[JsonPropertyName("video_ext")]
 		public string VideoExt { get; set; } = "";
 
 		[JsonPropertyName("audio_ext")]
 		public string AudioExt { get; set; } = "";
 
-		public String FormattedText{ get => $"{FormatID}: {Resolution}.{VideoExt}"; }
+		public String FormattedText
+		{
+			get
+			{
+				if (VideoExt != "none")
+				{
+					return $"{FormatID}: {Resolution}.{VideoExt}";
+				}
+				else
+				{
+					return $"{FormatID}: codec:{AudioCodec} ext:{AudioExt}";
+				}
+			}
+		}
 	}
 
 }
