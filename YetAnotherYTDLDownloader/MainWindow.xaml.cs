@@ -40,48 +40,40 @@ namespace YetAnotherYTDLDownloader
 
 	public class MainWindowViewModel : PropertyNotifiable
 	{
-		Regex downloadRgx = new Regex("[0-9]{0,3}%");
+		Regex downloadRgx = new Regex("[0-9.]{0,5}%");
 		public string InputURL { get; set; } = "";
 		public ObservableCollection<VideoDetails> VideoDetailList { get; set; } = new ObservableCollection<VideoDetails>();
 		public YTDLPArgs DownloadArgs { get; set; } = new YTDLPArgs();
 
 		public VideoDetails? SelectedVideo { get; private set; } = null;
 
-		private int mSelectedURLIndex = 0;
-		public int SelectedURLIndex
-		{
-			get { return mSelectedURLIndex; }
-			set
-			{
-				mSelectedURLIndex = -1;
-				//mSelectedURLIndex = value;
-				//Notify(nameof(SelectedVideo));
-				//Trace.WriteLine($"Selected URL Index changed to {mSelectedURLIndex}");
-			}
-		}
 		public float DownloadProgress { get; set; } = 0.0f;
 		public int SelectedVideoFormatIdx { get; set; } = -1;
 		public int SelectedAudioFormatIdx { get; set; } = -1;
 
-		public SimpleCommand AnalyzeAndAdd
+		public SimpleCommand AnalyzeAndAdd => new SimpleCommand(ex => { this.AnalyzeVideo(InputURL); });
+		public SimpleCommand StartDownload => new SimpleCommand(ex => { this.DownloadVideo(InputURL); });
+		public SimpleCommand ClearLog => new SimpleCommand(ex => { OutputLog = string.Empty; Notify(nameof(OutputLog)); });
+		public string OutputLog { get; set; } = "";
+
+		void OnExit(string error) 
 		{
-			get => new SimpleCommand(ex =>
-			{
-				this.AnalyzeVideo(InputURL);
-			});
+			OutputLog += "Process exited\n";
+			Notify(nameof(OutputLog));
 		}
 
-
-		public SimpleCommand StartDownload
+		void OnError(string error) 
 		{
-			get => new SimpleCommand(ex =>
-			{
-				this.DownloadVideo(InputURL);
-			});
+			OutputLog += $"{error}\n";
+			Notify(nameof(OutputLog));
 		}
 
 		private void AnalyzeVideo(string url)
 		{
+			//nothing, just leave
+			if (string.IsNullOrEmpty(url)) return;
+
+			OutputLog += "Starting analysis\n";
 			//Build my arguments
 			YTDLPHandler handler = new YTDLPHandler();
 
@@ -92,7 +84,7 @@ namespace YetAnotherYTDLDownloader
 			VideoDetails? outVideoDets = null;
 			Trace.WriteLine($"Starting from thread{Thread.CurrentThread.ManagedThreadId}");
 
-			handler.Exec(null, stdout =>
+			Action<string> onstdout = (string stdout) => 
 			{
 				try
 				{
@@ -102,11 +94,9 @@ namespace YetAnotherYTDLDownloader
 						Application.Current.Dispatcher.BeginInvoke(() =>
 						{
 							Trace.WriteLine($"OnTestDLPComplete Thread {Thread.CurrentThread.ManagedThreadId}");
-							//VideoDetailList.Add(outVideoDets);
 							SelectedVideo = outVideoDets;
 							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
 							Notify(nameof(SelectedVideo));
-							//Notify(nameof(VideoDetailList));
 						});
 					}
 
@@ -115,11 +105,16 @@ namespace YetAnotherYTDLDownloader
 				{
 					Trace.WriteLine(ex.ToString());
 				}
-			});
+			};
+
+			handler.Exec(null, onstdout, OnError, OnExit);
 		}
 
 		private void DownloadVideo(string url)
 		{
+			//nothing, just leave
+			if (string.IsNullOrEmpty(url)) return;
+
 			YTDLPHandler handler = new YTDLPHandler();
 
 			DownloadArgs.URL = url;
@@ -150,30 +145,24 @@ namespace YetAnotherYTDLDownloader
 
 			handler.Args = DownloadArgs.BuildArgs();
 
-			Action<string> stdallProcess = (string stdall) => { };
-			handler.Exec(stdallProcess, stdout =>
+			Action<string> downloadOutput = (string stdout) =>
 			{
-				try
+				Match? progressMatch = downloadRgx.Match(stdout);
+				if (stdout != null && progressMatch.Captures.Count > 0)
 				{
-					Application.Current.Dispatcher.BeginInvoke(() =>
+					string progress = progressMatch.Captures[0].Value;
+					int percentIdx = progress.IndexOf('%');
+					string edited = progress.Remove(percentIdx);
+
+					if (!string.IsNullOrEmpty(edited))
 					{
-						//Match? progressMatch = downloadRgx.Match(stdout);
-						//if (progressMatch != null && progressMatch.Groups.Count > 0)
-						//{
-							//string progress = progressMatch.Groups[0].Value;
-							//progress.Remove('%');
-							//if (!string.IsNullOrEmpty(progress))
-							//{
-							//	this.DownloadProgress = float.Parse(progress);
-							//}
-						//}
-					});
+						this.DownloadProgress = float.Parse(edited);
+						Notify(nameof(DownloadProgress));
+					}
 				}
-				catch (Exception ex)
-				{
-					Trace.WriteLine(ex.ToString());
-				}
-			});
+			};
+
+			handler.Exec(null, downloadOutput, OnError, OnExit);
 		}
 	}
 
