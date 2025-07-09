@@ -36,6 +36,11 @@ namespace YetAnotherYTDLDownloader.YTDLP
 
 			List<string> args = new List<string>();
 
+			if (WaitForVideo && WaitForVideoTimeInSeconds > 0)
+			{
+				args.Add($"--wait-for-video {WaitForVideoTimeInSeconds}");
+			}
+
 			if (AnalyzeMode)
 			{
 				args.Add("-j");
@@ -62,11 +67,6 @@ namespace YetAnotherYTDLDownloader.YTDLP
 				{
 					args.Add($"-f {SelectedVideoFormatID}");
 				}
-			}
-
-			if (WaitForVideo && WaitForVideoTimeInSeconds > 0)
-			{
-				args.Add($"--wait-for-video {WaitForVideoTimeInSeconds}");
 			}
 
 			if (LiveFromStart)
