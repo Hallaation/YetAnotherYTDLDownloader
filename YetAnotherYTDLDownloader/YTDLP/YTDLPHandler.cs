@@ -63,6 +63,14 @@ namespace YetAnotherYTDLDownloader.YTDLP
 			//Path.PathSeparator
 			if (isWindows)
 			{
+				//see if it exists in my own directory
+				string currYTDir = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+				if (File.Exists(currYTDir))
+				{
+					YTDLP_PATH = currYTDir;
+					Trace.WriteLine($"DLP found at {currYTDir}");
+					return true;
+				}
 				//Unsure how paths are handled on other platforms, PATH is guranteed to exist on windows
 				string[]? paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
@@ -123,7 +131,7 @@ namespace YetAnotherYTDLDownloader.YTDLP
 
 		private static Regex ErrSign = new Regex(@"^(?=.*?ERROR)(?=.*?sign)(?=.*?confirm)", RegexOptions.IgnoreCase);
 		private static Regex ErrUnsupported = new Regex(@"^(?=.*?ERROR)(?=.*?Unsupported)", RegexOptions.IgnoreCase);
-		public Process Exec(Action<string> stdall = null, Action<string> stdout = null, Action<string> stderr = null)
+		public Process Exec(Action<string> stdall = null, Action<string> stdout = null, Action<string> stderr = null, Action<string> stdend = null)
 		{
 			var fn = YTDLP_PATH;
 			if (!File.Exists(fn))
@@ -169,10 +177,15 @@ namespace YetAnotherYTDLDownloader.YTDLP
 				}
 			};
 
+			process.Exited += (s, e) =>
+			{
+				stdend?.Invoke("");
+			};
+
 			process.Start();
 			process.BeginErrorReadLine();
 			process.BeginOutputReadLine();
-			process.WaitForExit();
+			//process.WaitForExit();
 			return process;
 		}
 
