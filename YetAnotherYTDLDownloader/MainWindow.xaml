@@ -4,6 +4,7 @@
    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
    xmlns:classes="clr-namespace:YetAnotherYTDLDownloader.Classes"
    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+   xmlns:h="clr-namespace:YetAnotherYTDLDownloader.DepdencyProperties"
    xmlns:local="clr-namespace:YetAnotherYTDLDownloader"
    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
    Title="MainWindow"
@@ -52,14 +53,24 @@
             BorderThickness="2">
             <Grid Grid.Row="1" Grid.ColumnSpan="2">
                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="2*" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="*" />
                </Grid.ColumnDefinitions>
+
                <Grid.RowDefinitions>
                   <RowDefinition Height="1*" />
                   <RowDefinition Height="*" />
                   <RowDefinition Height=".1*" />
                </Grid.RowDefinitions>
+
+               <GridSplitter
+                  Grid.RowSpan="2"
+                  Grid.Column="1"
+                  Width="3"
+                  HorizontalAlignment="Stretch"
+                  Background="Blue"
+                  ResizeDirection="Columns" />
 
                <Grid Grid.Row="0">
                   <Grid.RowDefinitions>
@@ -75,15 +86,6 @@
                      <TextBox Text="{Binding SelectedVideo.Description}" />
                   </ScrollViewer>
                </Grid>
-               <!--<ListView ItemsSource="{Binding VideoDetailList, Mode=OneWay}" SelectedIndex="{Binding SelectedURLIndex, Mode=OneWayToSource}">
-                  <ListView.ItemTemplate>
-                     <DataTemplate DataType="classes:VideoDetails">
-                        <StackPanel ToolTip="{Binding Title}">
-                           <TextBlock Text="{Binding Title}" />
-                        </StackPanel>
-                     </DataTemplate>
-                  </ListView.ItemTemplate>
-               </ListView>-->
 
                <Grid Grid.Row="1">
                   <Grid.RowDefinitions>
@@ -137,31 +139,53 @@
                </Grid>
 
                <!--  Thumbnail  -->
-               <StackPanel Grid.Column="1" Margin="5">
+               <Grid Grid.Column="2" Margin="5">
+                  <Grid.RowDefinitions>
+                     <RowDefinition Height="*" />
+                     <RowDefinition Height=".1*" />
+                  </Grid.RowDefinitions>
                   <ContentControl Margin="0,0,0,5">
                      <!--<Rectangle Fill="Red" />-->
                      <Image Grid.Column="1" Source="{Binding SelectedVideo.Thumbnail}" />
                   </ContentControl>
-                  <CheckBox Content="Embed Thumbnail" IsChecked="{Binding DownloadArgs.EmbedThumbnail}" />
-               </StackPanel>
+                  <CheckBox
+                     Grid.Row="1"
+                     Content="Embed Thumbnail"
+                     IsChecked="{Binding DownloadArgs.EmbedThumbnail}" />
+               </Grid>
+               <ScrollViewer
+                  Grid.Row="1"
+                  Grid.Column="2"
+                  h:AutoScrollBehaviour.AutoScroll="True">
+                  <TextBox IsReadOnly="True" Text="{Binding OutputLog}" />
+               </ScrollViewer>
 
                <TextBox
                   x:Name="OutputDIR"
                   Grid.Row="2"
                   Margin="2,0,2,1"
                   Text="{Binding DownloadArgs.OutputDir, Mode=TwoWay}" />
-               <StackPanel
-                  Grid.Row="2"
-                  Grid.Column="1"
-                  Orientation="Horizontal">
-                  <Button Command="{Binding StartDownload}">
-                     <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="10"
-                        Text="Start Download" />
-                  </Button>
-                  <ProgressBar Width="100" Value="{Binding DownloadProgress}" />
-               </StackPanel>
+
+               <!--  Download button  -->
+               <Grid Grid.Row="2" Grid.Column="2">
+                  <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width=".5*" />
+                     <ColumnDefinition Width=".5*" />
+                     <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Button
+                     Grid.Column="0"
+                     Command="{Binding StartDownload}"
+                     Content="Start Download" />
+                  <Button
+                     Grid.Column="1"
+                     Command="{Binding ClearLog}"
+                     Content="Clear Log" />
+                  <ProgressBar
+                     Grid.Column="2"
+                     Margin="2"
+                     Value="{Binding DownloadProgress}" />
+               </Grid>
 
             </Grid>
          </Border>
