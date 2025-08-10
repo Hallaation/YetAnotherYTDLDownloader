@@ -54,17 +54,40 @@ namespace YetAnotherYTDLDownloader
 		public SimpleCommand AnalyzeAndAdd => new SimpleCommand(ex => { this.AnalyzeVideo(InputURL); });
 		public SimpleCommand StartDownload => new SimpleCommand(ex => { this.DownloadVideo(InputURL); });
 		public SimpleCommand ClearLog => new SimpleCommand(ex => { OutputLog = string.Empty; Notify(nameof(OutputLog)); });
+		public SimpleCommand KillProcess => new SimpleCommand(ex =>
+		{
+			if (currentProcess != null)
+			{
+				currentProcess.Kill();
+				//The rest will be dealt with in OnExit
+			}
+		});
+
+		public bool NotDownloading => currentProcess == null || (currentProcess != null && currentProcess.HasExited);
+		
 		public string OutputLog { get; set; } = "";
 
-		void OnExit(string error) 
+		private Process? currentProcess = null;
+
+		void OnExit(string error)
 		{
 			OutputLog += "Process exited\n";
 			Notify(nameof(OutputLog));
+
+			//make sure current process is now null because it doesn't exist anymore
+			if (currentProcess != null)
+			{
+				Trace.Assert(currentProcess.HasExited);
+				currentProcess = null;
+
+				Notify(nameof(NotDownloading));
+			}
+
 		}
 
-		void OnError(string error) 
+		void OnError(string error)
 		{
-			OutputLog += $"{error}\n";
+			OutputLog += $"Error ocurred: {error}\n";
 			Notify(nameof(OutputLog));
 		}
 
@@ -84,7 +107,7 @@ namespace YetAnotherYTDLDownloader
 			VideoDetails? outVideoDets = null;
 			Trace.WriteLine($"Starting from thread{Thread.CurrentThread.ManagedThreadId}");
 
-			Action<string> onstdout = (string stdout) => 
+			Action<string> onstdout = (string stdout) =>
 			{
 				try
 				{
@@ -95,6 +118,17 @@ namespace YetAnotherYTDLDownloader
 						{
 							Trace.WriteLine($"OnTestDLPComplete Thread {Thread.CurrentThread.ManagedThreadId}");
 							SelectedVideo = outVideoDets;
+
+							bool isCurrentlyLive = SelectedVideo.LiveStatus.CompareTo("is_live") == 0;
+							DownloadArgs.IsLiveStream = isCurrentlyLive;
+							//Its a live stream, we probably want to download from the start and not mid way
+							if (isCurrentlyLive)
+							{
+								DownloadArgs.LiveFromStart = isCurrentlyLive;
+								//we've made a change to the settings, make sure its reflected on UI
+								Notify(nameof(DownloadArgs));
+							}
+
 							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
 							Notify(nameof(SelectedVideo));
 						});
@@ -107,7 +141,8 @@ namespace YetAnotherYTDLDownloader
 				}
 			};
 
-			handler.Exec(null, onstdout, OnError, OnExit);
+			Process? analyzeProcess = handler.Exec(null, onstdout, OnError, OnExit);
+			Trace.Assert(analyzeProcess != null);
 		}
 
 		private void DownloadVideo(string url)
@@ -126,7 +161,6 @@ namespace YetAnotherYTDLDownloader
 				if (SelectedVideo != null && SelectedVideo?.VideoFormats?.Count > 0)
 				{
 					DownloadArgs.SelectedAudioFormatID = SelectedVideo.VideoFormats[SelectedVideoFormatIdx].FormatID;
-					//DownloadArgs.SelectedFormatID = SelectedVideo.Formats[SelectedFormatIdx].FormatID;
 				}
 			}
 			//get the audio format
@@ -135,13 +169,12 @@ namespace YetAnotherYTDLDownloader
 				if (SelectedVideo != null && SelectedVideo?.AudioFormats?.Count > 0)
 				{
 					DownloadArgs.SelectedAudioFormatID = SelectedVideo.AudioFormats[SelectedAudioFormatIdx].FormatID;
-					//DownloadArgs.SelectedFormatID = SelectedVideo.Formats[SelectedFormatIdx].FormatID;
 				}
 			}
 			if (SelectedVideo?.AudioFormats?.Count > 0 && SelectedAudioFormatIdx < 0)
 			{
 				//Audio not selected but audio formats exist, do we want to do anything?
-			} 
+			}
 
 			handler.Args = DownloadArgs.BuildArgs();
 
@@ -162,7 +195,10 @@ namespace YetAnotherYTDLDownloader
 				}
 			};
 
-			handler.Exec(null, downloadOutput, OnError, OnExit);
+			Trace.Assert(currentProcess == null);
+			currentProcess = handler.Exec(null, downloadOutput, OnError, OnExit);
+			Trace.Assert(currentProcess != null);
+			Notify(nameof(NotDownloading));
 		}
 	}
 

@@ -97,6 +97,7 @@
                   <StackPanel Grid.Row="2" Grid.ColumnSpan="2">
                      <Rectangle Grid.Row="1" Fill="AliceBlue" />
                      <CheckBox Content="Verbose Output" IsChecked="{Binding DownloadArgs.SplitTracks}" />
+                     <CheckBox Content="Write Description" IsChecked="{Binding DownloadArgs.WriteDescription}" />
                      <CheckBox Content="Live FromStart" IsChecked="{Binding DownloadArgs.LiveFromStart}" />
                      <CheckBox Content="Embed Metadata" IsChecked="{Binding DownloadArgs.EmbedMetadata}" />
                      <CheckBox Content="Include Uploader" IsChecked="{Binding DownloadArgs.IncludeUploader}" />
@@ -142,7 +143,8 @@
                <Grid Grid.Column="2" Margin="5">
                   <Grid.RowDefinitions>
                      <RowDefinition Height="*" />
-                     <RowDefinition Height=".1*" />
+                     <RowDefinition Height=".15*" />
+                     <RowDefinition Height=".15*" />
                   </Grid.RowDefinitions>
                   <ContentControl Margin="0,0,0,5">
                      <!--<Rectangle Fill="Red" />-->
@@ -152,6 +154,10 @@
                      Grid.Row="1"
                      Content="Embed Thumbnail"
                      IsChecked="{Binding DownloadArgs.EmbedThumbnail}" />
+                  <CheckBox
+                     Grid.Row="2"
+                     Content="Write Thumbnail"
+                     IsChecked="{Binding DownloadArgs.WriteThumbnail}" />
                </Grid>
                <ScrollViewer
                   Grid.Row="1"
@@ -169,6 +175,7 @@
                <!--  Download button  -->
                <Grid Grid.Row="2" Grid.Column="2">
                   <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width=".7*" />
                      <ColumnDefinition Width=".5*" />
                      <ColumnDefinition Width=".5*" />
                      <ColumnDefinition Width="*" />
@@ -176,13 +183,18 @@
                   <Button
                      Grid.Column="0"
                      Command="{Binding StartDownload}"
+                     IsEnabled="{Binding NotDownloading}"
                      Content="Start Download" />
                   <Button
                      Grid.Column="1"
                      Command="{Binding ClearLog}"
                      Content="Clear Log" />
-                  <ProgressBar
+                  <Button
                      Grid.Column="2"
+                     Command="{Binding KillProcess}"
+                     Content="Kill process" />
+                  <ProgressBar
+                     Grid.Column="3"
                      Margin="2"
                      Value="{Binding DownloadProgress}" />
                </Grid>
