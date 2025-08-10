@@ -137,7 +137,6 @@ namespace YetAnotherYTDLDownloader.YTDLP
 			if (!File.Exists(fn))
 			{
 				throw new Exception("YTDLP path not set");
-				return null;
 			}
 			var info = new ProcessStartInfo()
 			{
