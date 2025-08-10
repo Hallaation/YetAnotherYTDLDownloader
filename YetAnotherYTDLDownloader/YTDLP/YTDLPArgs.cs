@@ -97,7 +97,7 @@ namespace YetAnotherYTDLDownloader.YTDLP
 
 			if (IncludeUploader)
 			{
-				args.Add($"-o {OutputDir}\\%(uploader)s\\%(uploader)s-%(title)s.%(ext)s");
+				args.Add($"-o {OutputDir}\\%(uploader)s\\%(title)s\\%(title)s.%(ext)s");
 			}
 			else
 			{
