@@ -24,6 +24,9 @@ namespace YetAnotherYTDLDownloader.YTDLP
 		public bool EmbedThumbnail { get; set; } = true;
 		public bool SplitTracks { get; set; } = false;
 		public bool IncludeUploader { get; set; } = true;
+		public bool WriteThumbnail { get; set; } = true;
+		public bool WriteDescription { get; set; } = true;
+		public bool IsLiveStream { get; set; } = true;
 
 		public string SelectedVideoFormatID { get; set; } = "";
 		public string SelectedAudioFormatID { get; set; } = "";
@@ -90,10 +93,24 @@ namespace YetAnotherYTDLDownloader.YTDLP
 			}
 
 
+			if (WriteThumbnail)
+			{
+				args.Add("--write-thumbnail");
+
+			}
+			if (WriteDescription)
+			{
+				args.Add("--write-description");
+			}
+
 			//add any arguments we want by default
 			//avoids corruption, don't think we need an option for this
 			args.Add("--hls-use-mpegts");
-			args.Add("--progress");
+			//No progress for a livestream if the potential end is infinite
+			if (IsLiveStream)
+			{
+				args.Add("--progress");
+			}
 
 			if (IncludeUploader)
 			{
