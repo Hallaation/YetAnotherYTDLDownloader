@@ -131,11 +131,12 @@ namespace YetAnotherYTDLDownloader.YTDLP
 
 		private static Regex ErrSign = new Regex(@"^(?=.*?ERROR)(?=.*?sign)(?=.*?confirm)", RegexOptions.IgnoreCase);
 		private static Regex ErrUnsupported = new Regex(@"^(?=.*?ERROR)(?=.*?Unsupported)", RegexOptions.IgnoreCase);
-		public Process Exec(Action<string> stdall = null, Action<string> stdout = null, Action<string> stderr = null, Action<string> stdend = null)
+		public Process? Exec(Action<string>? stdall = null, Action<string>? stdout = null, Action<string>? stderr = null, Action<string>? stdend = null)
 		{
 			var fn = YTDLP_PATH;
 			if (!File.Exists(fn))
 			{
+				throw new Exception("YTDLP path not set");
 				return null;
 			}
 			var info = new ProcessStartInfo()
