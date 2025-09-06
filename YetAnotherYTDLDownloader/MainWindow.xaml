@@ -81,9 +81,9 @@
                   <TextBox
                      Grid.Row="0"
                      Height="20"
-                     Text="{Binding SelectedVideo.Title}" />
+                     Text="{Binding CurrentVideoDetails.Title}" />
                   <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                     <TextBox Text="{Binding SelectedVideo.Description}" />
+                     <TextBox Text="{Binding CurrentVideoDetails.Description}" />
                   </ScrollViewer>
                </Grid>
 
@@ -117,7 +117,7 @@
                   <ComboBox
                      Name="VideoFormats"
                      Grid.Row="0"
-                     ItemsSource="{Binding SelectedVideo.VideoFormats}"
+                     ItemsSource="{Binding CurrentVideoDetails.VideoFormats}"
                      SelectedIndex="{Binding SelectedVideoFormatIdx}">
                      <ComboBox.ItemTemplate>
                         <DataTemplate DataType="classes:VideoFormatDetails">
@@ -128,7 +128,7 @@
                   <ComboBox
                      Name="AudioFormats"
                      Grid.Row="1"
-                     ItemsSource="{Binding SelectedVideo.AudioFormats}"
+                     ItemsSource="{Binding CurrentVideoDetails.AudioFormats}"
                      SelectedIndex="{Binding SelectedAudioFormatIdx}">
                      <ComboBox.ItemTemplate>
                         <DataTemplate DataType="classes:VideoFormatDetails">
@@ -148,7 +148,7 @@
                   </Grid.RowDefinitions>
                   <ContentControl Margin="0,0,0,5">
                      <!--<Rectangle Fill="Red" />-->
-                     <Image Grid.Column="1" Source="{Binding SelectedVideo.Thumbnail}" />
+                     <Image Grid.Column="1" Source="{Binding CurrentVideoDetails.Thumbnail}" />
                   </ContentControl>
                   <CheckBox
                      Grid.Row="1"
@@ -183,7 +183,7 @@
                   <Button
                      Grid.Column="0"
                      Command="{Binding StartDownload}"
-                     IsEnabled="{Binding NotDownloading}"
+                     IsEnabled="{Binding DownloadAvailable}"
                      Content="Start Download" />
                   <Button
                      Grid.Column="1"

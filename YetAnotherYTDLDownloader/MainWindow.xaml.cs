@@ -40,12 +40,13 @@ namespace YetAnotherYTDLDownloader
 
 	public class MainWindowViewModel : PropertyNotifiable
 	{
+		//Numbers 0-9 and '.' for percentage up to 5 characters (% inclusive) e.g 99.99% 
 		Regex downloadRgx = new Regex("[0-9.]{0,5}%");
 		public string InputURL { get; set; } = "";
 		public ObservableCollection<VideoDetails> VideoDetailList { get; set; } = new ObservableCollection<VideoDetails>();
 		public YTDLPArgs DownloadArgs { get; set; } = new YTDLPArgs();
 
-		public VideoDetails? SelectedVideo { get; private set; } = null;
+		public VideoDetails? CurrentVideoDetails { get; private set; } = null;
 
 		public float DownloadProgress { get; set; } = 0.0f;
 		public int SelectedVideoFormatIdx { get; set; } = -1;
@@ -63,15 +64,15 @@ namespace YetAnotherYTDLDownloader
 			}
 		});
 
-		public bool NotDownloading => currentProcess == null || (currentProcess != null && currentProcess.HasExited);
-		
+		public bool DownloadAvailable => (currentProcess == null || (currentProcess != null && currentProcess.HasExited)) && CurrentVideoDetails != null;
+
 		public string OutputLog { get; set; } = "";
 
 		private Process? currentProcess = null;
 
-		void OnExit(string error)
+		void OnExit(string outputString)
 		{
-			OutputLog += "Process exited\n";
+			OutputLog += string.IsNullOrEmpty(outputString) ? "Process exited\n" : $"Process exited with message: {outputString}";
 			Notify(nameof(OutputLog));
 
 			//make sure current process is now null because it doesn't exist anymore
@@ -80,9 +81,8 @@ namespace YetAnotherYTDLDownloader
 				Trace.Assert(currentProcess.HasExited);
 				currentProcess = null;
 
-				Notify(nameof(NotDownloading));
+				Notify(nameof(DownloadAvailable));
 			}
-
 		}
 
 		void OnError(string error)
@@ -117,9 +117,9 @@ namespace YetAnotherYTDLDownloader
 						Application.Current.Dispatcher.BeginInvoke(() =>
 						{
 							Trace.WriteLine($"OnTestDLPComplete Thread {Thread.CurrentThread.ManagedThreadId}");
-							SelectedVideo = outVideoDets;
+							CurrentVideoDetails = outVideoDets;
 
-							bool isCurrentlyLive = SelectedVideo.LiveStatus.CompareTo("is_live") == 0;
+							bool isCurrentlyLive = CurrentVideoDetails.LiveStatus.CompareTo("is_live") == 0;
 							DownloadArgs.IsLiveStream = isCurrentlyLive;
 							//Its a live stream, we probably want to download from the start and not mid way
 							if (isCurrentlyLive)
@@ -127,10 +127,11 @@ namespace YetAnotherYTDLDownloader
 								DownloadArgs.LiveFromStart = isCurrentlyLive;
 								//we've made a change to the settings, make sure its reflected on UI
 								Notify(nameof(DownloadArgs));
+								Notify(nameof(DownloadAvailable));
 							}
 
 							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
-							Notify(nameof(SelectedVideo));
+							Notify(nameof(CurrentVideoDetails));
 						});
 					}
 
@@ -154,26 +155,24 @@ namespace YetAnotherYTDLDownloader
 
 			DownloadArgs.URL = url;
 			DownloadArgs.AnalyzeMode = false;
+			Trace.Assert(CurrentVideoDetails != null, "Current video should not be null");
+			DownloadArgs.VideoTitle = CurrentVideoDetails != null ? CurrentVideoDetails.Title : "Null";
 
 			//get the video format
 			if (SelectedVideoFormatIdx != -1)
 			{
-				if (SelectedVideo != null && SelectedVideo?.VideoFormats?.Count > 0)
+				if (CurrentVideoDetails != null && CurrentVideoDetails?.VideoFormats?.Count > 0)
 				{
-					DownloadArgs.SelectedAudioFormatID = SelectedVideo.VideoFormats[SelectedVideoFormatIdx].FormatID;
+					DownloadArgs.SelectedAudioFormatID = CurrentVideoDetails.VideoFormats[SelectedVideoFormatIdx].FormatID;
 				}
 			}
 			//get the audio format
 			if (SelectedAudioFormatIdx != -1)
 			{
-				if (SelectedVideo != null && SelectedVideo?.AudioFormats?.Count > 0)
+				if (CurrentVideoDetails != null && CurrentVideoDetails?.AudioFormats?.Count > 0)
 				{
-					DownloadArgs.SelectedAudioFormatID = SelectedVideo.AudioFormats[SelectedAudioFormatIdx].FormatID;
+					DownloadArgs.SelectedAudioFormatID = CurrentVideoDetails.AudioFormats[SelectedAudioFormatIdx].FormatID;
 				}
-			}
-			if (SelectedVideo?.AudioFormats?.Count > 0 && SelectedAudioFormatIdx < 0)
-			{
-				//Audio not selected but audio formats exist, do we want to do anything?
 			}
 
 			handler.Args = DownloadArgs.BuildArgs();
@@ -198,7 +197,7 @@ namespace YetAnotherYTDLDownloader
 			Trace.Assert(currentProcess == null);
 			currentProcess = handler.Exec(null, downloadOutput, OnError, OnExit);
 			Trace.Assert(currentProcess != null);
-			Notify(nameof(NotDownloading));
+			Notify(nameof(DownloadAvailable));
 		}
 	}
 
