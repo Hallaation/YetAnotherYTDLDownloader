@@ -19,7 +19,6 @@ namespace YetAnotherYTDLDownloader.YTDLP
 		public bool VerboseOutput { get; set; } = true;
 		public bool WaitForVideo { get; set; } = false;
 		public bool LiveFromStart { get; set; } = false;
-
 		public bool EmbedMetadata { get; set; } = true;
 		public bool EmbedThumbnail { get; set; } = true;
 		public bool SplitTracks { get; set; } = false;
@@ -32,6 +31,7 @@ namespace YetAnotherYTDLDownloader.YTDLP
 		public string SelectedAudioFormatID { get; set; } = "";
 
 		public string URL { get; set; } = "";
+		public string VideoTitle { get; set; } = "";
 
 		public String BuildArgs()
 		{
@@ -114,11 +114,11 @@ namespace YetAnotherYTDLDownloader.YTDLP
 
 			if (IncludeUploader)
 			{
-				args.Add($"-o {OutputDir}\\%(uploader)s\\%(title)s\\%(title)s.%(ext)s");
+				args.Add($"-o {OutputDir}\\%(uploader)s\\{VideoTitle}\\{VideoTitle}.%(ext)s");
 			}
 			else
 			{
-				args.Add($"-o {OutputDir}\\%(title)s.%(ext)s");
+				args.Add($"-o {OutputDir}\\{VideoTitle}.%(ext)s");
 			}
 			string temp = "";
 			temp = args.Aggregate((curr, next) => $"{curr} {next}");
