@@ -156,7 +156,6 @@ namespace YetAnotherYTDLDownloader
 			DownloadArgs.URL = url;
 			DownloadArgs.AnalyzeMode = false;
 			Trace.Assert(CurrentVideoDetails != null, "Current video should not be null");
-			DownloadArgs.VideoTitle = CurrentVideoDetails != null ? CurrentVideoDetails.Title : "Null";
 
 			//get the video format
 			if (SelectedVideoFormatIdx != -1)
@@ -188,8 +187,15 @@ namespace YetAnotherYTDLDownloader
 
 					if (!string.IsNullOrEmpty(edited))
 					{
-						this.DownloadProgress = float.Parse(edited);
-						Notify(nameof(DownloadProgress));
+						try
+						{
+							this.DownloadProgress = float.Parse(edited);
+							Notify(nameof(DownloadProgress));
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine(e.Message);
+						}
 					}
 				}
 			};
