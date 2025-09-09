@@ -127,11 +127,11 @@ namespace YetAnotherYTDLDownloader
 								DownloadArgs.LiveFromStart = isCurrentlyLive;
 								//we've made a change to the settings, make sure its reflected on UI
 								Notify(nameof(DownloadArgs));
-								Notify(nameof(DownloadAvailable));
 							}
 
 							Trace.Assert(!string.IsNullOrEmpty(outVideoDets.ID));
 							Notify(nameof(CurrentVideoDetails));
+							Notify(nameof(DownloadAvailable));
 						});
 					}
 
