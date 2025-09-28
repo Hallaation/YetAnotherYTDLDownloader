@@ -102,6 +102,8 @@
                      <CheckBox Content="Embed Metadata" IsChecked="{Binding DownloadArgs.EmbedMetadata}" />
                      <CheckBox Content="Include Uploader" IsChecked="{Binding DownloadArgs.IncludeUploader}" />
                      <CheckBox Content="Wait for Video" IsChecked="{Binding DownloadArgs.WaitForVideo}" />
+                     <CheckBox Content="Output to Log" IsChecked="{Binding OutputToLog}"/>
+                     <CheckBox Content="Output Error to Log" IsChecked="{Binding OutputErrorToLog}"/>
                      <TextBlock
                         HorizontalAlignment="Center"
                         Text="{Binding DownloadArgs.WaitForVideoTimeInSeconds}"

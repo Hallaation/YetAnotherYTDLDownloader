@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using YetAnotherYTDLDownloader.Classes;
 using YetAnotherYTDLDownloader.YTDLP;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 //global namespace
@@ -51,7 +52,8 @@ namespace YetAnotherYTDLDownloader
 		public float DownloadProgress { get; set; } = 0.0f;
 		public int SelectedVideoFormatIdx { get; set; } = -1;
 		public int SelectedAudioFormatIdx { get; set; } = -1;
-
+		public bool OutputToLog { get; set; } = true;
+		public bool OutputErrorToLog { get; set; } = true;
 		public SimpleCommand AnalyzeAndAdd => new SimpleCommand(ex => { this.AnalyzeVideo(InputURL); });
 		public SimpleCommand StartDownload => new SimpleCommand(ex => { this.DownloadVideo(InputURL); });
 		public SimpleCommand ClearLog => new SimpleCommand(ex => { OutputLog = string.Empty; Notify(nameof(OutputLog)); });
@@ -87,7 +89,17 @@ namespace YetAnotherYTDLDownloader
 
 		void OnError(string error)
 		{
-			OutputLog += $"Error ocurred: {error}\n";
+			if (!OutputErrorToLog) return;
+
+			OutputLog += $"ERR: {error}\n";
+			Notify(nameof(OutputLog));
+		}
+
+		void OnStdAll(string output) 
+		{
+			if (!OutputToLog) return;
+
+			OutputLog += $"STD: {output}\n";
 			Notify(nameof(OutputLog));
 		}
 
@@ -142,7 +154,7 @@ namespace YetAnotherYTDLDownloader
 				}
 			};
 
-			Process? analyzeProcess = handler.Exec(null, onstdout, OnError, OnExit);
+			Process? analyzeProcess = handler.Exec(OnStdAll, onstdout, OnError, OnExit);
 			Trace.Assert(analyzeProcess != null);
 		}
 
@@ -201,7 +213,7 @@ namespace YetAnotherYTDLDownloader
 			};
 
 			Trace.Assert(currentProcess == null);
-			currentProcess = handler.Exec(null, downloadOutput, OnError, OnExit);
+			currentProcess = handler.Exec(OnStdAll, downloadOutput, OnError, OnExit);
 			Trace.Assert(currentProcess != null);
 			Notify(nameof(DownloadAvailable));
 		}

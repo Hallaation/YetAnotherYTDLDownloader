@@ -167,7 +167,6 @@ namespace YetAnotherYTDLDownloader.YTDLP
 				Debug.WriteLine(e.Data, "ERR");
 				if (!string.IsNullOrWhiteSpace(e.Data))
 				{
-					stdall?.Invoke(e.Data);
 					stderr?.Invoke(e.Data);
 					if (ErrSign.IsMatch(e.Data))
 					{
